@@ -15,7 +15,7 @@ export default function Home() {
         />
 
 
-        <h1 className="text-5xl text-center">Underground Electronic Music Hub</h1>
+        <h1 className="text-3xl text-center">Underground Electronic Music Hub</h1>
       </main>
     </>
   );
