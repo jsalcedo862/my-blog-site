@@ -4,6 +4,7 @@ import matter from 'gray-matter'
 import { remark } from 'remark'
 import html from 'remark-html'
 import Navbar from '@/components/Navbar'
+import Image from 'next/image'
 
 const postsDirectory = path.join(process.cwd(), 'posts')
 
@@ -36,21 +37,61 @@ export async function getStaticProps({ params }) {
       postData: {
         id: params.id,
         contentHtml,
-        ...data
+        ...data,
       }
     }
   }
 }
 
 export default function Post({ postData }) {
+  const { title, date, image, recordLabel, releaseDate, contentHtml } = postData
+
   return (
     <>
       <Navbar />
-      <article className="prose lg:prose-xl p-6 max-w-3xl mx-auto">
-        <h1>{postData.title}</h1>
-        <p className="text-gray-500 text-sm">{postData.date}</p>
-        <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
+      <article className="prose lg:prose-xl max-w-3xl mx-auto p-6">
+        {image && (
+          <div className="w-full max-w-md mx-auto mb-6">
+            <Image
+              src={image}
+              alt={`Banner for ${title}`}
+              width={800}
+              height={400}
+              className="rounded-lg w-full h-auto"
+            />
+          </div>
+        )}
+
+        <h1 className="text-4xl font-bold">{title}</h1>
+
+        {recordLabel && (
+          <p className="text-lg text-gray-700 mt-2">
+            <span className="font-medium">Record Label:</span> {recordLabel}
+          </p>
+        )}
+
+        {releaseDate && (
+          <p className="text-lg text-gray-700">
+            <span className="font-medium">Release Date:</span>{" "}
+            {new Date(releaseDate).toLocaleDateString()}
+          </p>
+        )}
+
+        <p className="text-sm text-gray-500 mt-2 mb-6">
+          Published: {new Date(date).toLocaleDateString()}
+        </p>
+
+        <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+
+        <a
+          href="https://pleasureclubx.bandcamp.com/album/before-we-look-out-lets-look-in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors mt-6"
+        >
+          🎧 Listen on Bandcamp
+        </a>
       </article>
     </>
-  )
+  );
 }
