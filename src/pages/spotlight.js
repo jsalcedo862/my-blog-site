@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar'
 import { getSortedPostsData } from '@/../lib/posts'
 import Image from 'next/image'
+import Footer from '@/components/Footer'
 
 export async function getStaticProps() {
   const allPostsData = getSortedPostsData()

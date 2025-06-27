@@ -1,11 +1,13 @@
 import Navbar from '@/components/Navbar'
 import Image from 'next/image'
+import Footer from '@/components/Footer'
 
 export default function Home() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 space-y-6">
+
+      <main className="flex-grow flex flex-col items-center justify-center p-8 space-y-6">
         <Image
           src="/images/3klogo.jpg"
           alt="3k Records Logo"
@@ -14,9 +16,12 @@ export default function Home() {
           className="w-32 sm:w-48 md:w-60 h-auto rounded"
         />
 
-
-        <h1 className="text-3xl text-center">Underground Electronic Music Hub</h1>
+        <h1 className="text-3xl text-center">
+          Underground Electronic Music Hub
+        </h1>
       </main>
-    </>
+
+      <Footer />
+    </div>
   );
 }
