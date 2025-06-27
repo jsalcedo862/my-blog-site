@@ -14,7 +14,6 @@ export default function Footer() {
             className="flex items-center gap-2 hover:text-pink-400"
           >
             <FaInstagram />
-            Instagram
           </a>
 
           <a
@@ -24,7 +23,6 @@ export default function Footer() {
             className="flex items-center gap-2 hover:text-orange-400"
           >
             <FaSoundcloud />
-            SoundCloud
           </a>
 
           <a
@@ -34,7 +32,6 @@ export default function Footer() {
             className="flex items-center gap-2 hover:text-red-500"
           >
             <FaYoutube />
-            YouTube
           </a>
 
           <a
@@ -43,7 +40,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:text-yellow-300"
           >
-            💿 Discogs
+            💿
           </a>
         </div>
       </div>
