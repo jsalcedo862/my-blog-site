@@ -44,7 +44,7 @@ export async function getStaticProps({ params }) {
 }
 
 export default function Post({ postData }) {
-  const { title, date, image, recordLabel, releaseDate, contentHtml } = postData
+  const { title, date, image, recordLabel, releaseDate, contentHtml, musicLink } = postData
 
   return (
     <>
@@ -83,14 +83,16 @@ export default function Post({ postData }) {
 
         <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
 
-        <a
-          href="https://pleasureclubx.bandcamp.com/album/before-we-look-out-lets-look-in"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors mt-6"
-        >
-          🎧 Listen on Bandcamp
-        </a>
+        {musicLink && (
+          <a
+            href={musicLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors mt-6"
+          >
+            🎧 Listen
+          </a>
+        )}
       </article>
     </>
   );

@@ -4,6 +4,7 @@ date: "2025-06-26"
 image: "/images/IMG-bobby-before-we-look-out-lets-look-in.jpg"
 recordLabel: "Pleasure Club"
 releaseDate: "August 4, 2025"
+musicLink: https://pleasureclubx.bandcamp.com/album/before-we-look-out-lets-look-in
 ---
 
 It is with great pleasure I write this first post on the website about one of my favorite DJs & Producer.

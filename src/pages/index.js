@@ -17,8 +17,19 @@ export default function Home() {
         />
 
         <h1 className="text-3xl text-center">
-          Underground Electronic Music Hub
+          Electronic Music Hub
         </h1>
+
+        <p>Welcome, currently only our spotlight feature is available. Click below to explore!</p>
+
+        {/* 🚀 Spotlight Button */}
+        <a
+          href="/spotlight"
+          className="mt-6 inline-block bg-[#495361] text-white px-6 py-2 rounded-md text-lg hover:bg-blue-700 transition"
+        >
+          Spotlight
+        </a>
+
       </main>
 
       <Footer />
