@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar'
 import Image from 'next/image'
 import Footer from '@/components/Footer'
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -23,12 +24,14 @@ export default function Home() {
         <p>Welcome, currently only our spotlight feature is available. Click below to explore!</p>
 
         {/* 🚀 Spotlight Button */}
-        <a
+        <Link
           href="/spotlight"
           className="mt-6 inline-block bg-[#495361] text-white px-6 py-2 rounded-md text-lg hover:bg-blue-700 transition"
         >
           Spotlight
-        </a>
+        </Link>
+
+        
 
       </main>
 
