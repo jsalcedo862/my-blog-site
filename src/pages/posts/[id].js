@@ -1,46 +1,30 @@
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+// src/pages/posts/[id].js
 import { supabase } from '../../../lib/supabaseClient'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 
-export default function PostPage() {
-  const router = useRouter()
-  const { id } = router.query
-  const [post, setPost] = useState(null)
-  const [loading, setLoading] = useState(true)
+export async function getServerSideProps({ params }) {
+  const { id } = params
 
-  useEffect(() => {
-    if (!id) return
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', id)
+    .single()
 
-    async function fetchPost() {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error) {
-        console.error('Error fetching post:', error)
-      } else {
-        setPost(data)
-      }
-
-      setLoading(false)
+  if (error || !post) {
+    return {
+      notFound: true,
     }
-
-    fetchPost()
-  }, [id])
-
-  if (loading) {
-    return <div className="p-6">Loading...</div>
   }
 
-  if (!post) {
-    return <div className="p-6">Post not found.</div>
+  return {
+    props: { post },
   }
+}
 
+export default function PostPage({ post }) {
   return (
     <div className="flex flex-col min-h-screen w-full">
       <Navbar />
@@ -77,7 +61,7 @@ export default function PostPage() {
           Published: {new Date(post.date).toLocaleDateString()}
         </p>
 
-        <div className="prose max-w-none">
+        <div className="prose max-w-none whitespace-pre-line">
           {post.content}
         </div>
 
