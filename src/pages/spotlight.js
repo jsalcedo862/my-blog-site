@@ -1,14 +1,19 @@
 import Navbar from '@/components/Navbar'
-import { getSortedPostsData } from '@/../lib/posts'
+//import { getSortedPostsData } from '@/../lib/posts'
 import Image from 'next/image'
 import Footer from '@/components/Footer'
+import { getPostsFromSupabase } from '@/../lib/getPostsFromSupabase'
 
 export async function getStaticProps() {
-  const allPostsData = getSortedPostsData()
+  //const allPostsData = getSortedPostsData()
+  const allPostsData = await getPostsFromSupabase()
   return { props: { allPostsData } }
 }
 
 export default function Spotlight({ allPostsData }) {
+
+  console.log('All Posts:', allPostsData);
+
   return (
     <div className="flex flex-col min-h-screen w-full">
       <Navbar />

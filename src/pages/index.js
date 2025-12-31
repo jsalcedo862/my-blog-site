@@ -4,6 +4,10 @@ import Footer from '@/components/Footer'
 import Link from 'next/link'
 
 export default function Home() {
+
+  //console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
