@@ -1,8 +1,9 @@
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/../lib/supabaseClient'
 
-export default function EditPost() {
+function EditPost() {
   const router = useRouter()
   const { id } = router.query
   const [post, setPost] = useState(null)
@@ -139,5 +140,14 @@ export default function EditPost() {
         </button>
       </form>
     </div>
+  )
+}
+
+
+export default function EditPostPage() {
+  return (
+    <ProtectedRoute>
+      <EditPost />
+    </ProtectedRoute>
   )
 }

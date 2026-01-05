@@ -1,9 +1,13 @@
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/../lib/supabaseClient'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
-export default function AdminDashboard() {
+
+function AdminDashboardContent() {
   const [posts, setPosts] = useState([])
+  const router = useRouter()
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -34,9 +38,24 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <button onClick={async () => {
+                await supabase.auth.signOut()
+                window.location.href = '/login'
+            }}
+            className="bg-white px-4 py-2 rounded"
+            > Logout </button>
+        </div>
 
       <Link href="/admin/new" className="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-6">
         ➕ New Post
@@ -64,5 +83,13 @@ export default function AdminDashboard() {
         ))}
       </ul>
     </div>
+  )
+}
+
+export default function AdminDashboard() {
+  return (
+    <ProtectedRoute>
+      <AdminDashboardContent />
+    </ProtectedRoute>
   )
 }

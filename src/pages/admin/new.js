@@ -1,8 +1,9 @@
+import ProtectedRoute from '@/components/ProtectedRoute'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '@/../lib/supabaseClient'
 
-export default function NewPost() {
+function NewPost() {
   const router = useRouter()
 
   const [formData, setFormData] = useState({
@@ -130,5 +131,14 @@ export default function NewPost() {
         </button>
       </form>
     </div>
+  )
+}
+
+
+export default function AdminNewPage() {
+  return (
+    <ProtectedRoute>
+      <NewPost />
+    </ProtectedRoute>
   )
 }
