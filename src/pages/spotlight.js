@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Footer from '@/components/Footer'
 import { getPostsFromSupabase } from '@/../lib/getPostsFromSupabase'
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   //const allPostsData = getSortedPostsData()
   const allPostsData = await getPostsFromSupabase()
   return { props: { allPostsData } }
