@@ -4,7 +4,7 @@ import ProductForm from '@/components/ProductForm';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { supabaseClient } from '../../lib/supabaseClient';
+import { supabaseClient } from '../../../lib/supabaseClient';
 
 export default function NewProduct() {
   const router = useRouter();

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { supabaseClient } from '../../../lib/supabaseClient';
+import { supabaseClient } from '../../../../lib/supabaseClient';
 
 
 export default function AdminProducts() {
