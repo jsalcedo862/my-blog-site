@@ -12,6 +12,7 @@ export default function ProductForm({ product, onSubmit, loading }) {
     release_date: '',
     genre: '',
     format: '12-inch vinyl',
+    condition: 'Mint',  // ← ADD THIS LINE
   });
 
   const handleChange = (e) => {
@@ -143,6 +144,23 @@ export default function ProductForm({ product, onSubmit, loading }) {
           className="w-full border rounded px-3 py-2"
           placeholder="12-inch vinyl"
         />
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-bold mb-2">Condition</label>
+        <select
+          name="condition"
+          value={formData.condition || 'Mint'}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        >
+          <option value="Mint">Mint</option>
+          <option value="Near Mint">Near Mint</option>
+          <option value="Very Good Plus">Very Good Plus</option>
+          <option value="Very Good">Very Good</option>
+          <option value="Good Plus">Good Plus</option>
+          <option value="Good">Good</option>
+        </select>
       </div>
 
       <div className="flex gap-2">

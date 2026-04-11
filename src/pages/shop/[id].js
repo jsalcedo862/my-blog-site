@@ -117,6 +117,9 @@ export default function ProductDetail() {
                   Release Date: {new Date(product.release_date).toLocaleDateString()}
                 </p>
               )}
+              {product.condition && (
+                <p className="text-sm text-gray-600 mb-6">Condition: <span className="font-bold">{product.condition}</span></p>
+              )}
 
               <div className="flex gap-4 items-center mb-6">
                 <div className="flex items-center border rounded">
