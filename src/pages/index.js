@@ -25,7 +25,7 @@ export default function Home() {
           Electronic Music Hub
         </h1>
 
-        <p>Welcome, our shopping capabilites is in test mode. For now only our Spotlight feature is functional, click below to explore!</p>
+        <p>Welcome, our shopping capability is in test mode. For now only our Spotlight feature is functional, click below to explore!</p>
 
         {/* 🚀 Spotlight Button */}
         <Link
