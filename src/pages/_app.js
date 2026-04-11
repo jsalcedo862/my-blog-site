@@ -1,5 +1,21 @@
-import "@/styles/globals.css";
+import '@/styles/globals.css';
+import { CartProvider } from '@/context/CartContext';
+import { useEffect } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }) {
+  useEffect(() => {
+    // Check auth state on mount
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
+    });
+  }, []);
+
+  return (
+    <CartProvider>
+      <Component {...pageProps} />
+    </CartProvider>
+  );
 }
+
+export default MyApp

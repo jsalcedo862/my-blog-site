@@ -61,6 +61,27 @@ function AdminDashboardContent() {
         ➕ New Post
       </Link>
 
+
+      {/* Shop Management Section */}
+      <div className="mt-8 pt-6 border-t">
+        <h2 className="text-2xl font-bold mb-4">Shop Management</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link href="/admin/products">
+            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded font-bold">
+              📦 Manage Products
+            </button>
+          </Link>
+          
+          <Link href="/admin/orders">
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-bold">
+              📋 Manage Orders
+            </button>
+          </Link>
+        </div>
+      </div>     
+
+
       <ul className="space-y-4">
         {posts.map(post => (
           <li key={post.id} className="border p-4 rounded shadow">
