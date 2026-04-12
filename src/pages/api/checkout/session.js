@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { supabaseClient } from '../../../../lib/supabaseClient';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -7,14 +8,52 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { items, email } = req.body;
+  const { items, email, shipping_address } = req.body;
 
-  if (!items || items.length === 0 || !email) {
-    return res.status(400).json({ error: 'Items and email required' });
+  if (!items || items.length === 0 || !email || !shipping_address) {
+    return res.status(400).json({ error: 'Items, email, and shipping address required' });
   }
 
   try {
-    // Create line items for Stripe
+    // Step 1: Create order in Supabase first
+    const { data: order, error: orderError } = await supabaseClient
+      .from('orders')
+      .insert([
+        {
+          email,
+          shipping_address,
+          total_amount: items.reduce((total, item) => total + (item.price * item.quantity), 0),
+          status: 'pending',
+        },
+      ])
+      .select()
+      .single();
+
+    if (orderError || !order) {
+      console.error('Order creation error:', orderError);
+      return res.status(500).json({ error: 'Failed to create order' });
+    }
+
+    // Step 2: Create order items
+    const orderItemsData = items.map((item) => ({
+      order_id: order.id,
+      product_id: item.id,
+      quantity: item.quantity,
+      price_at_purchase: item.price,
+    }));
+
+    const { error: itemsError } = await supabaseClient
+      .from('order_items')
+      .insert(orderItemsData);
+
+    if (itemsError) {
+      console.error('Order items error:', itemsError);
+      // Rollback: delete order
+      await supabaseClient.from('orders').delete().eq('id', order.id);
+      return res.status(500).json({ error: 'Failed to add items to order' });
+    }
+
+    // Step 3: Create Stripe checkout session
     const lineItems = items.map((item) => ({
       price_data: {
         currency: 'usd',
@@ -23,12 +62,11 @@ export default async function handler(req, res) {
           description: item.artist,
           images: item.image_url ? [item.image_url] : [],
         },
-        unit_amount: Math.round(item.price * 100), // Convert to cents
+        unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity,
     }));
 
-    // Create Stripe session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -38,9 +76,23 @@ export default async function handler(req, res) {
       customer_email: email,
     });
 
-    return res.status(200).json({ sessionId: session.id, url: session.url });
+    // Step 4: Update order with Stripe session ID
+    const { error: updateError } = await supabaseClient
+      .from('orders')
+      .update({ stripe_session_id: session.id })
+      .eq('id', order.id);
+
+    if (updateError) {
+      console.error('Failed to update order with session ID:', updateError);
+    }
+
+    return res.status(200).json({ 
+      sessionId: session.id, 
+      url: session.url,
+      orderId: order.id
+    });
   } catch (err) {
-    console.error('Stripe error details:', err.message, err.code);
+    console.error('Stripe error:', err);
     return res.status(500).json({ 
       error: 'Failed to create checkout session',
       details: err.message 

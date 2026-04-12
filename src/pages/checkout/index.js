@@ -45,6 +45,7 @@ export default function Checkout() {
         body: JSON.stringify({
           items: cart,
           email,
+          shipping_address: shippingAddress,
         }),
       });
 

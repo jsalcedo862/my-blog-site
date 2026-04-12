@@ -1,8 +1,38 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Success() {
+  const router = useRouter();
+  const { session_id } = router.query;
+
+  useEffect(() => {
+    const sendConfirmationEmail = async () => {
+      if (!session_id) return;
+
+      try {
+        // Query the order by stripe_session_id
+        const ordersRes = await fetch(`/api/orders-by-session?session_id=${session_id}`);
+        const orderData = await ordersRes.json();
+
+        if (orderData.order) {
+          // Send confirmation email
+          await fetch('/api/send-order-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: orderData.order.id }),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to send confirmation email:', err);
+      }
+    };
+
+    sendConfirmationEmail();
+  }, [session_id]);
+
   return (
     <>
       <Navbar />
