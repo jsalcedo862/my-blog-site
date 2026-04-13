@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     const emailHtml = orderConfirmationEmail({ order, items });
 
     const sendResult = await resend.emails.send({
-      from: 'orders@3krecords.com', // Change to your domain
+      from: 'noreply@shop.3krecordshop.com',
       to: order.email,
       subject: `Order Confirmation - 3k Records`,
       html: emailHtml,
@@ -56,8 +56,25 @@ export default async function handler(req, res) {
 
     if (sendResult.error) {
       console.error('Resend error:', sendResult.error);
+      // Log error to database
+      await supabaseClient
+        .from('orders')
+        .update({ 
+          email_sent: false,
+          email_error: sendResult.error.message 
+        })
+        .eq('id', orderId);
       return res.status(500).json({ error: 'Failed to send email' });
     }
+
+    // Log successful send to database
+    await supabaseClient
+      .from('orders')
+      .update({ 
+        email_sent: true,
+        email_sent_at: new Date().toISOString()
+      })
+      .eq('id', orderId);
 
     return res.status(200).json({ 
       message: 'Email sent successfully',
