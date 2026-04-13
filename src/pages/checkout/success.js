@@ -1,12 +1,13 @@
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function Success() {
   const router = useRouter();
   const { session_id } = router.query;
+  const [emailStatus, setEmailStatus] = useState(null); // 'success', 'failed', or null
 
   useEffect(() => {
     const sendConfirmationEmail = async () => {
@@ -14,19 +15,30 @@ export default function Success() {
 
       try {
         // Query the order by stripe_session_id
-        const ordersRes = await fetch(`/api/orders-by-session?session_id=${session_id}`);
+        const ordersRes = await fetch(
+          `/api/orders-by-session?session_id=${session_id}`,
+        );
         const orderData = await ordersRes.json();
 
         if (orderData.order) {
           // Send confirmation email
-          await fetch('/api/send-order-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const emailRes = await fetch("/api/send-order-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ orderId: orderData.order.id }),
           });
+
+          // Check if email send was successful
+          if (emailRes.ok) {
+            setEmailStatus("success");
+          } else {
+            console.error("Email send failed:", await emailRes.json());
+            setEmailStatus("failed");
+          }
         }
       } catch (err) {
-        console.error('Failed to send confirmation email:', err);
+        console.error("Failed to send confirmation email:", err);
+        setEmailStatus("failed");
       }
     };
 
@@ -38,10 +50,19 @@ export default function Success() {
       <Navbar />
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-green-600 mb-4">✓ Payment Successful!</h1>
+          <h1 className="text-4xl font-bold text-green-600 mb-4">
+            ✓ Payment Successful!
+          </h1>
           <p className="text-xl text-gray-600 mb-4">
-            Thank you for your purchase. You'll receive an email confirmation shortly.
+            Thank you for your purchase. You'll receive an email confirmation
+            shortly.
           </p>
+          {emailStatus === "failed" && (
+            <p className="text-sm text-red-600 mb-4 font-semibold">
+              ⚠️ We had trouble sending your confirmation email. Please check
+              your email or contact support.
+            </p>
+          )}
           <p className="text-sm text-gray-500 mb-8">
             Order details have been sent to your email address.
           </p>

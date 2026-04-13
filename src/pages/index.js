@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar'
-import Image from 'next/image'
-import Footer from '@/components/Footer'
-import Link from 'next/link'
-import { supabase } from '../../lib/supabaseClient'
+import { useEffect, useState } from "react";
+import Navbar from "@/components/Navbar";
+import Image from "next/image";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import { supabase } from "../../lib/supabaseClient";
 
 export default function Home() {
   const [recentProducts, setRecentProducts] = useState([]);
@@ -15,9 +15,9 @@ export default function Home() {
       try {
         // Fetch 6 most recent products
         const { data: products, error: productError } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false })
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false })
           .limit(6);
 
         if (productError) throw productError;
@@ -25,15 +25,15 @@ export default function Home() {
 
         // Fetch latest spotlight post
         const { data: posts, error: postError } = await supabase
-          .from('posts')
-          .select('*')
-          .order('date', { ascending: false })
+          .from("posts")
+          .select("*")
+          .order("date", { ascending: false })
           .limit(1);
 
         if (postError) throw postError;
         setLatestPost(posts?.[0] || null);
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
@@ -62,14 +62,21 @@ export default function Home() {
           </h1>
 
           <p className="text-center text-gray-600 mt-4 max-w-2xl">
-            Welcome, our shopping capability is in test mode. For now only our Spotlight feature is functional, click below to explore!
+            Welcome, our shopping capability is in test mode. For now only our
+            Spotlight feature is functional, click on spotlight above in the
+            navitgion bar to explore!
           </p>
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 max-w-2xl mx-auto">
+            <p className="text-yellow-800 font-semibold text-center">
+              ⚠️ SHOP IN TEST MODE — Please do not place any orders
+            </p>
+          </div>
         </div>
 
         {/* Recently Added Section - Full Width */}
         <div className="max-w-7xl mx-auto mb-16">
           <h2 className="text-2xl font-bold mb-6">Recently Added</h2>
-          
+
           {loading ? (
             <p>Loading products...</p>
           ) : recentProducts.length === 0 ? (
@@ -88,10 +95,18 @@ export default function Home() {
                         />
                       )}
                       <div className="p-4">
-                        <h3 className="font-bold text-lg mb-1">{product.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{product.artist}</p>
-                        <p className="text-xs text-gray-500 mb-2">{product.condition}</p>
-                        <p className="text-blue-600 font-bold text-lg">${product.price.toFixed(2)}</p>
+                        <h3 className="font-bold text-lg mb-1">
+                          {product.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {product.artist}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-2">
+                          {product.condition}
+                        </p>
+                        <p className="text-blue-600 font-bold text-lg">
+                          ${product.price.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   </Link>
@@ -110,7 +125,7 @@ export default function Home() {
         {/* Latest Spotlight Section - Full Width */}
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold mb-6">Latest From Spotlight</h2>
-          
+
           {loading ? (
             <p>Loading post...</p>
           ) : latestPost ? (
@@ -125,7 +140,9 @@ export default function Home() {
                     />
                   )}
                   <div className="p-6 flex flex-col justify-center">
-                    <h3 className="font-bold text-2xl mb-2">{latestPost.title}</h3>
+                    <h3 className="font-bold text-2xl mb-2">
+                      {latestPost.title}
+                    </h3>
                     <p className="text-sm text-gray-500 mb-4">
                       {new Date(latestPost.date).toLocaleDateString()}
                     </p>
