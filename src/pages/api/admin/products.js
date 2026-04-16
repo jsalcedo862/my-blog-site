@@ -1,32 +1,69 @@
-import { supabaseClient } from '../../../../lib/supabaseClient';
+import { createClient } from "@supabase/supabase-js";
+
+// Server-side only admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
 
 export default async function handler(req, res) {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
-  // Check auth (basic check - in production, verify admin role)
+  // Check auth
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === 'POST') {
+  // Get user from token
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseAdmin.auth.getUser(token);
+  if (userError || !user) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+
+  // Verify admin role using admin_users table
+  const { data: adminCheck, error: adminError } = await supabaseAdmin
+    .from("admin_users")
+    .select("id")
+    .eq("id", user.id)
+    .single();
+
+  if (adminError || !adminCheck) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+
+  if (req.method === "POST") {
     return createProduct(req, res, token);
-  } else if (req.method === 'GET') {
+  } else if (req.method === "GET") {
     return getProducts(req, res);
   } else {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 }
 
 async function createProduct(req, res, token) {
-  const { title, artist, description, price, stock_quantity, image_url, release_date, genre, format } = req.body;
+  const {
+    title,
+    artist,
+    description,
+    price,
+    stock_quantity,
+    image_url,
+    release_date,
+    genre,
+    format,
+    condition,
+  } = req.body;
 
   if (!title || !artist || price === undefined) {
-    return res.status(400).json({ error: 'Title, artist, and price required' });
+    return res.status(400).json({ error: "Title, artist, and price required" });
   }
 
   try {
-    const { data, error } = await supabaseClient
-      .from('products')
+    const { data, error } = await supabaseAdmin
+      .from("products")
       .insert([
         {
           title,
@@ -37,7 +74,8 @@ async function createProduct(req, res, token) {
           image_url,
           release_date,
           genre,
-          format: format || '12-inch vinyl',
+          format: format || "12-inch vinyl",
+          condition,
         },
       ])
       .select()
@@ -49,17 +87,17 @@ async function createProduct(req, res, token) {
 
     return res.status(201).json(data);
   } catch (err) {
-    console.error('API error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("API error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
 async function getProducts(req, res) {
   try {
-    const { data, error } = await supabaseClient
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabaseAdmin
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
       return res.status(500).json({ error: error.message });
@@ -67,7 +105,7 @@ async function getProducts(req, res) {
 
     return res.status(200).json(data);
   } catch (err) {
-    console.error('API error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("API error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

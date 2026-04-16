@@ -1,37 +1,48 @@
-import Stripe from 'stripe';
-import { supabaseClient } from '../../../../lib/supabaseClient';
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
+
+// Server-side only admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { items, email, shipping_address } = req.body;
 
   if (!items || items.length === 0 || !email || !shipping_address) {
-    return res.status(400).json({ error: 'Items, email, and shipping address required' });
+    return res
+      .status(400)
+      .json({ error: "Items, email, and shipping address required" });
   }
 
   try {
     // Step 1: Create order in Supabase first
-    const { data: order, error: orderError } = await supabaseClient
-      .from('orders')
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from("orders")
       .insert([
         {
           email,
           shipping_address,
-          total_amount: items.reduce((total, item) => total + (item.price * item.quantity), 0),
-          status: 'pending',
+          total_amount: items.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0,
+          ),
+          status: "pending",
         },
       ])
       .select()
       .single();
 
     if (orderError || !order) {
-      console.error('Order creation error:', orderError);
-      return res.status(500).json({ error: 'Failed to create order' });
+      console.error("Order creation error:", orderError);
+      return res.status(500).json({ error: "Failed to create order" });
     }
 
     // Step 2: Create order items
@@ -42,21 +53,21 @@ export default async function handler(req, res) {
       price_at_purchase: item.price,
     }));
 
-    const { error: itemsError } = await supabaseClient
-      .from('order_items')
+    const { error: itemsError } = await supabaseAdmin
+      .from("order_items")
       .insert(orderItemsData);
 
     if (itemsError) {
-      console.error('Order items error:', itemsError);
+      console.error("Order items error:", itemsError);
       // Rollback: delete order
-      await supabaseClient.from('orders').delete().eq('id', order.id);
-      return res.status(500).json({ error: 'Failed to add items to order' });
+      await supabaseAdmin.from("orders").delete().eq("id", order.id);
+      return res.status(500).json({ error: "Failed to add items to order" });
     }
 
     // Step 3: Create Stripe checkout session
     const lineItems = items.map((item) => ({
       price_data: {
-        currency: 'usd',
+        currency: "usd",
         product_data: {
           name: item.title,
           description: item.artist,
@@ -68,34 +79,34 @@ export default async function handler(req, res) {
     }));
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: lineItems,
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/cart`,
+      mode: "payment",
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/cart`,
       customer_email: email,
     });
 
     // Step 4: Update order with Stripe session ID
-    const { error: updateError } = await supabaseClient
-      .from('orders')
+    const { error: updateError } = await supabaseAdmin
+      .from("orders")
       .update({ stripe_session_id: session.id })
-      .eq('id', order.id);
+      .eq("id", order.id);
 
     if (updateError) {
-      console.error('Failed to update order with session ID:', updateError);
+      console.error("Failed to update order with session ID:", updateError);
     }
 
-    return res.status(200).json({ 
-      sessionId: session.id, 
+    return res.status(200).json({
+      sessionId: session.id,
       url: session.url,
-      orderId: order.id
+      orderId: order.id,
     });
   } catch (err) {
-    console.error('Stripe error:', err);
-    return res.status(500).json({ 
-      error: 'Failed to create checkout session',
-      details: err.message 
+    console.error("Stripe error:", err);
+    return res.status(500).json({
+      error: "Failed to create checkout session",
+      details: err.message,
     });
   }
 }
