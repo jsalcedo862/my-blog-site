@@ -1,47 +1,49 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import { useCart } from '@/context/CartContext';
-import { useStripe } from '@/context/StripeContext';
-import { loadStripe } from '@stripe/stripe-js';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { useCart } from "@/context/CartContext";
+import { useStripe } from "@/context/StripeContext";
+import { loadStripe } from "@stripe/stripe-js";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import { useEffect } from "react";
+import { supabaseClient } from "@/../lib/supabaseClient";
 
 export default function Checkout() {
   const router = useRouter();
   const { cart, getTotalPrice } = useCart();
-  const [email, setEmail] = useState('');
-  const [shippingAddress, setShippingAddress] = useState('');
+  const [email, setEmail] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [token, setToken] = useState(""); // Add this
 
-  if (cart.length === 0) {
-    return (
-      <>
-        <Navbar />
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <p className="text-2xl mb-4">Your cart is empty</p>
-          <Link href="/shop">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded">
-              Continue Shopping
-            </button>
-          </Link>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+  // Add this useEffect to get auth token
+  useEffect(() => {
+    const getToken = async () => {
+      const {
+        data: { session },
+      } = await supabaseClient.auth.getSession();
+      if (session?.access_token) {
+        setToken(session.access_token);
+      }
+    };
+    getToken();
+  }, []);
 
   const handleCheckout = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      // Create checkout session
-      const res = await fetch('/api/checkout/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // Create checkout session WITH auth token
+      const res = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }), // Add auth token if available
+        },
         body: JSON.stringify({
           items: cart,
           email,
@@ -50,20 +52,22 @@ export default function Checkout() {
       });
 
       const data = await res.json();
-      console.log('Checkout response:', data);
+      console.log("Checkout response:", data);
 
       if (!res.ok) {
-        throw new Error(data.details || data.error || 'Failed to create checkout session');
+        throw new Error(
+          data.details || data.error || "Failed to create checkout session",
+        );
       }
 
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL provided');
+        throw new Error("No checkout URL provided");
       }
     } catch (err) {
-      console.error('Checkout error:', err);
-      setError(err.message || 'Checkout failed. Please try again.');
+      console.error("Checkout error:", err);
+      setError(err.message || "Checkout failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,12 +86,19 @@ export default function Checkout() {
               <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
               <div className="bg-gray-100 p-6 rounded-lg">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between mb-3 pb-3 border-b">
+                  <div
+                    key={item.id}
+                    className="flex justify-between mb-3 pb-3 border-b"
+                  >
                     <div>
                       <p className="font-bold">{item.title}</p>
-                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                      <p className="text-sm text-gray-600">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
-                    <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
                   </div>
                 ))}
                 <div className="flex justify-between text-xl font-bold pt-4">
@@ -120,7 +131,9 @@ export default function Checkout() {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-bold mb-2">Shipping Address</label>
+                  <label className="block text-sm font-bold mb-2">
+                    Shipping Address
+                  </label>
                   <textarea
                     required
                     value={shippingAddress}
@@ -132,7 +145,8 @@ export default function Checkout() {
                 </div>
 
                 <p className="text-sm text-gray-600 mb-4">
-                  You'll be redirected to Stripe to complete payment using your credit card.
+                  You'll be redirected to Stripe to complete payment using your
+                  credit card.
                 </p>
 
                 <button
@@ -140,7 +154,7 @@ export default function Checkout() {
                   disabled={loading}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold transition disabled:opacity-50"
                 >
-                  {loading ? 'Processing...' : 'Continue to Payment'}
+                  {loading ? "Processing..." : "Continue to Payment"}
                 </button>
 
                 <Link href="/cart">

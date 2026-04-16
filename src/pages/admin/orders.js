@@ -1,24 +1,34 @@
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { supabaseClient } from '../../../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { supabaseClient } from "../../../lib/supabaseClient";
 
-const ORDER_STATUSES = ['pending', 'paid', 'shipped', 'delivered'];
+const ORDER_STATUSES = ["pending", "paid", "shipped", "delivered"];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState('');
-  const [filter, setFilter] = useState('');
+  const [token, setToken] = useState("");
+  const [filter, setFilter] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
+  const [shippingModal, setShippingModal] = useState({
+    show: false,
+    orderId: null,
+    trackingNumber: "",
+    carrier: "",
+  });
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession();
       if (session?.access_token) {
         setToken(session.access_token);
       } else if (error) {
-        console.error('Session error:', error);
+        console.error("Session error:", error);
       }
     };
 
@@ -30,14 +40,14 @@ export default function AdminOrders() {
 
     const fetchOrders = async () => {
       try {
-        const res = await fetch('/api/admin/orders', {
+        const res = await fetch("/api/admin/orders", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch');
+        if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         setOrders(data);
       } catch (err) {
-        console.error('Failed to fetch orders:', err);
+        console.error("Failed to fetch orders:", err);
       } finally {
         setLoading(false);
       }
@@ -46,124 +56,243 @@ export default function AdminOrders() {
     fetchOrders();
   }, [token]);
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus) => {
+    if (newStatus === "shipped") {
+      setShippingModal({
+        show: true,
+        orderId,
+        trackingNumber: "",
+        carrier: "",
+      });
+      return;
+    }
+
+    await updateOrderStatus(orderId, newStatus, null, null);
+  };
+
+  const handleShippingSubmit = async () => {
+    await updateOrderStatus(
+      shippingModal.orderId,
+      "shipped",
+      shippingModal.trackingNumber,
+      shippingModal.carrier,
+    );
+    setShippingModal({
+      show: false,
+      orderId: null,
+      trackingNumber: "",
+      carrier: "",
+    });
+  };
+
+  const updateOrderStatus = async (
+    orderId,
+    newStatus,
+    trackingNumber,
+    carrier,
+  ) => {
+    setUpdatingId(orderId);
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PUT',
+      const res = await fetch("/api/admin/orders", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          id: orderId,
+          status: newStatus,
+          trackingNumber,
+          carrier,
+        }),
       });
 
-      if (!res.ok) throw new Error('Failed to update');
-      
-      setOrders(orders.map(o =>
-        o.id === orderId ? { ...o, status: newStatus } : o
-      ));
+      if (!res.ok) throw new Error("Failed to update");
+
+      const updatedOrder = await res.json();
+      setOrders(orders.map((o) => (o.id === orderId ? updatedOrder : o)));
     } catch (err) {
-      alert('Failed to update order status');
-      console.error(err);
+      console.error("Failed to update order:", err);
+      alert("Failed to update order");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
   const filteredOrders = filter
-    ? orders.filter(o => o.status === filter)
+    ? orders.filter((o) => o.status === filter)
     : orders;
 
-  if (loading) {
+  if (loading)
     return (
-      <>
-        <Navbar />
-        <div className="flex items-center justify-center min-h-screen">
-          <p>Loading orders...</p>
-        </div>
-        <Footer />
-      </>
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
     );
-  }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Manage Orders</h1>
 
-          <div className="mb-6 flex gap-2 flex-wrap">
+      <main className="flex-grow p-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Order Management</h1>
+
+          {/* Filter Buttons */}
+          <div className="flex gap-2 mb-6 flex-wrap">
             <button
-              onClick={() => setFilter('')}
-              className={`px-4 py-2 rounded font-bold ${!filter ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              onClick={() => setFilter("")}
+              className={`px-4 py-2 rounded ${!filter ? "bg-blue-600 text-white" : "bg-gray-200"}`}
             >
               All Orders
             </button>
-            {ORDER_STATUSES.map(status => (
+            {ORDER_STATUSES.map((status) => (
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 rounded font-bold capitalize ${filter === status ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                className={`px-4 py-2 rounded capitalize ${filter === status ? "bg-blue-600 text-white" : "bg-gray-200"}`}
               >
-                {status}
+                {status} ({orders.filter((o) => o.status === status).length})
               </button>
             ))}
           </div>
 
-          {filteredOrders.length === 0 ? (
-            <p className="text-gray-600">No orders found.</p>
-          ) : (
-            <div className="space-y-4">
-              {filteredOrders.map((order) => (
-                <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Order ID</p>
-                      <p className="font-bold">{order.id.substring(0, 8)}...</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="font-bold">{order.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Total</p>
-                      <p className="font-bold text-lg">${order.total_amount.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Date</p>
-                      <p className="font-bold">{new Date(order.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
+          {/* Orders Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-3 text-left">Order ID</th>
+                  <th className="border p-3 text-left">Email</th>
+                  <th className="border p-3 text-right">Total</th>
+                  <th className="border p-3 text-left">Status</th>
+                  <th className="border p-3 text-left">Created</th>
+                  <th className="border p-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="border-b hover:bg-gray-50">
+                    <td className="border p-3 font-mono text-sm">
+                      {order.id.slice(0, 8)}
+                    </td>
+                    <td className="border p-3">{order.email}</td>
+                    <td className="border p-3 text-right font-semibold">
+                      ${order.total_amount.toFixed(2)}
+                    </td>
+                    <td className="border p-3 capitalize">
+                      <select
+                        value={order.status}
+                        onChange={(e) =>
+                          handleStatusChange(order.id, e.target.value)
+                        }
+                        disabled={updatingId === order.id}
+                        className="p-1 border rounded capitalize"
+                      >
+                        {ORDER_STATUSES.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="border p-3 text-sm">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="border p-3">
+                      <Link
+                        href={`/account/orders/${order.id}`}
+                        target="_blank"
+                        className="text-blue-600 hover:underline text-sm"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600 mb-2">Shipping Address</p>
-                    <p className="bg-gray-100 p-2 rounded text-sm">{order.shipping_address}</p>
-                  </div>
-
-                  <div className="flex gap-2 flex-wrap">
-                    <label className="block text-sm font-bold mb-1">Status:</label>
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                      className="border rounded px-3 py-1"
-                    >
-                      {ORDER_STATUSES.map(status => (
-                        <option key={status} value={status}>{status}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {filteredOrders.length === 0 && (
+            <p className="text-center text-gray-600 py-8">No orders found</p>
           )}
+        </div>
+      </main>
 
-          <div className="mt-8">
-            <Link href="/admin">
-              <button className="text-blue-600 hover:underline">← Back to Admin</button>
-            </Link>
+      {/* Shipping Modal */}
+      {shippingModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Add Tracking Info</h2>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold mb-1">
+                Tracking Number
+              </label>
+              <input
+                type="text"
+                value={shippingModal.trackingNumber}
+                onChange={(e) =>
+                  setShippingModal({
+                    ...shippingModal,
+                    trackingNumber: e.target.value,
+                  })
+                }
+                placeholder="e.g., 1Z999AA10123456784"
+                className="w-full border rounded p-2"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-semibold mb-1">
+                Carrier
+              </label>
+              <select
+                value={shippingModal.carrier}
+                onChange={(e) =>
+                  setShippingModal({
+                    ...shippingModal,
+                    carrier: e.target.value,
+                  })
+                }
+                className="w-full border rounded p-2"
+              >
+                <option value="">Select Carrier</option>
+                <option value="UPS">UPS</option>
+                <option value="FedEx">FedEx</option>
+                <option value="USPS">USPS</option>
+                <option value="DHL">DHL</option>
+                <option value="Standard Shipping">Standard Shipping</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setShippingModal({
+                    show: false,
+                    orderId: null,
+                    trackingNumber: "",
+                    carrier: "",
+                  })
+                }
+                className="flex-1 px-4 py-2 border rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleShippingSubmit}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Send & Update
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
       <Footer />
-    </>
+    </div>
   );
 }

@@ -3,11 +3,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useCart } from "../../context/CartContext";
 
 export default function Success() {
   const router = useRouter();
   const { session_id } = router.query;
   const [emailStatus, setEmailStatus] = useState(null); // 'success', 'failed', or null
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const sendConfirmationEmail = async () => {
@@ -31,6 +33,7 @@ export default function Success() {
           // Check if email send was successful
           if (emailRes.ok) {
             setEmailStatus("success");
+            clearCart();
           } else {
             console.error("Email send failed:", await emailRes.json());
             setEmailStatus("failed");

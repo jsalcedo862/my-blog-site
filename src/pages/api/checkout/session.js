@@ -15,6 +15,7 @@ export default async function handler(req, res) {
   }
 
   const { items, email, shipping_address } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!items || items.length === 0 || !email || !shipping_address) {
     return res
@@ -23,11 +24,24 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Get user ID if authenticated (optional for guest checkout)
+    let userId = null;
+    if (token) {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabaseAdmin.auth.getUser(token);
+      if (user) {
+        userId = user.id;
+      }
+    }
+
     // Step 1: Create order in Supabase first
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert([
         {
+          user_id: userId, // Add user_id if authenticated
           email,
           shipping_address,
           total_amount: items.reduce(
