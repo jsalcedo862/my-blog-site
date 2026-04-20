@@ -37,9 +37,7 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* Recently Added Section */}
-        <div
-          style={{ padding: "48px 48px 64px 48px" }}
-        >
+        <div style={{ padding: "48px 48px 64px 48px" }}>
           <div
             style={{
               display: "flex",

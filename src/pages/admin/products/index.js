@@ -1,24 +1,28 @@
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { supabaseClient } from '../../../../lib/supabaseClient';
-
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { supabaseClient } from "../../../../lib/supabaseClient";
 
 export default function AdminProducts() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState('');
+  const [error, setError] = useState("");
+  const [token, setToken] = useState("");
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession();
       if (session?.access_token) {
         setToken(session.access_token);
-      } else if (error) {
-        console.error('Session error:', error);
+      } else {
+        // No session — redirect to login
+        router.push("/login");
       }
     };
 
@@ -30,14 +34,21 @@ export default function AdminProducts() {
 
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/admin/products', {
+        const res = await fetch("/api/admin/products", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Failed to fetch');
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          setError(
+            `Error ${res.status}: ${body.error || "Failed to load products"}`,
+          );
+          return;
+        }
         const data = await res.json();
         setProducts(data);
       } catch (err) {
-        console.error('Failed to fetch products:', err);
+        setError("Network error — could not reach the server");
+        console.error("Failed to fetch products:", err);
       } finally {
         setLoading(false);
       }
@@ -47,17 +58,21 @@ export default function AdminProducts() {
   }, [token]);
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to delete');
-      setProducts(products.filter(p => p.id !== id));
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        alert(`Failed to delete product: ${body.error || res.status}`);
+        return;
+      }
+      setProducts(products.filter((p) => p.id !== id));
     } catch (err) {
-      alert('Failed to delete product');
+      alert(`Failed to delete product: ${err.message}`);
       console.error(err);
     }
   };
@@ -88,6 +103,12 @@ export default function AdminProducts() {
             </Link>
           </div>
 
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+              {error}
+            </div>
+          )}
+
           {products.length === 0 ? (
             <p className="text-gray-600">No products yet.</p>
           ) : (
@@ -107,8 +128,12 @@ export default function AdminProducts() {
                     <tr key={product.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">{product.title}</td>
                       <td className="py-3 px-4">{product.artist}</td>
-                      <td className="text-center py-3 px-4">${product.price.toFixed(2)}</td>
-                      <td className="text-center py-3 px-4">{product.stock_quantity}</td>
+                      <td className="text-center py-3 px-4">
+                        ${product.price.toFixed(2)}
+                      </td>
+                      <td className="text-center py-3 px-4">
+                        {product.stock_quantity}
+                      </td>
                       <td className="text-center py-3 px-4">
                         <div className="flex gap-2 justify-center">
                           <Link href={`/admin/products/edit/${product.id}`}>
@@ -133,7 +158,9 @@ export default function AdminProducts() {
 
           <div className="mt-8">
             <Link href="/admin">
-              <button className="text-blue-600 hover:underline">← Back to Admin</button>
+              <button className="text-blue-600 hover:underline">
+                ← Back to Admin
+              </button>
             </Link>
           </div>
         </div>
