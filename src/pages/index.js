@@ -37,10 +37,37 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* Recently Added Section */}
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold mb-8 text-[#1a1a2e]">
-            Recently Added
-          </h2>
+        <div
+          style={{ padding: "48px 48px 64px 48px" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "16px",
+            }}
+          >
+            <h2 className="text-3xl font-bold" style={{ color: "#1a1a2e" }}>
+              Recently Added
+            </h2>
+            <Link
+              href="/shop"
+              style={{
+                display: "inline-block",
+                backgroundColor: "#1a1a2e",
+                color: "#FCFAFA",
+                padding: "10px 24px",
+                borderRadius: "4px",
+                fontWeight: "600",
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              View All
+            </Link>
+          </div>
 
           {loading ? (
             <div className="text-center py-12">
@@ -49,19 +76,12 @@ export default function Home() {
           ) : recentProducts.length === 0 ? (
             <p className="text-[#666666] text-center">No products available</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
               {recentProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
-
-          <Link
-            href="/shop"
-            className="inline-block text-[#737382] hover:text-[#1a1a2e] font-semibold mb-16"
-          >
-            View All Products →
-          </Link>
         </div>
       </main>
       <Footer />
