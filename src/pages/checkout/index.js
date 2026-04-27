@@ -74,103 +74,183 @@ export default function Checkout() {
   };
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f5f3f0' }}>
       <Navbar />
-      <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Checkout</h1>
+      <div style={{ flex: 1, padding: '48px 48px 64px 48px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#1a1a2e', marginBottom: '32px' }}>
+          Checkout
+        </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Order Summary */}
-            <div className="order-2 md:order-1">
-              <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-              <div className="bg-gray-100 p-6 rounded-lg">
-                {cart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between mb-3 pb-3 border-b"
-                  >
-                    <div>
-                      <p className="font-bold">{item.title}</p>
-                      <p className="text-sm text-gray-600">
-                        Qty: {item.quantity}
-                      </p>
-                    </div>
-                    <p className="font-bold">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
-                <div className="flex justify-between text-xl font-bold pt-4">
-                  <span>Total:</span>
-                  <span>${getTotalPrice().toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Checkout Form */}
-            <div className="order-1 md:order-2">
-              <h2 className="text-2xl font-bold mb-4">Shipping & Payment</h2>
-              <form onSubmit={handleCheckout}>
-                {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <label className="block text-sm font-bold mb-2">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                    placeholder="your@email.com"
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-bold mb-2">
-                    Shipping Address
-                  </label>
-                  <textarea
-                    required
-                    value={shippingAddress}
-                    onChange={(e) => setShippingAddress(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                    placeholder="123 Main St, City, State 12345"
-                    rows={3}
-                  />
-                </div>
-
-                <p className="text-sm text-gray-600 mb-4">
-                  You'll be redirected to Stripe to complete payment using your
-                  credit card.
-                </p>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold transition disabled:opacity-50"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Checkout form */}
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a2e', marginBottom: '20px' }}>
+              Shipping & Payment
+            </h2>
+            <form onSubmit={handleCheckout}>
+              {error && (
+                <div
+                  style={{
+                    backgroundColor: '#fde8e8',
+                    border: '1px solid #f5c6c6',
+                    color: '#b91c1c',
+                    borderRadius: '6px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    marginBottom: '16px',
+                  }}
                 >
-                  {loading ? "Processing..." : "Continue to Payment"}
-                </button>
+                  {error}
+                </div>
+              )}
 
-                <Link href="/cart">
-                  <button
-                    type="button"
-                    className="w-full bg-gray-200 hover:bg-gray-300 text-black py-3 rounded-lg font-bold transition mt-2"
-                  >
-                    Back to Cart
-                  </button>
-                </Link>
-              </form>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#1a1a2e', marginBottom: '6px' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  style={{
+                    width: '100%',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '6px',
+                    padding: '10px 12px',
+                    fontSize: '14px',
+                    color: '#1a1a2e',
+                    backgroundColor: '#FCFAFA',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#1a1a2e', marginBottom: '6px' }}>
+                  Shipping Address
+                </label>
+                <textarea
+                  required
+                  value={shippingAddress}
+                  onChange={(e) => setShippingAddress(e.target.value)}
+                  placeholder="123 Main St, City, State 12345"
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '6px',
+                    padding: '10px 12px',
+                    fontSize: '14px',
+                    color: '#1a1a2e',
+                    backgroundColor: '#FCFAFA',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <p style={{ fontSize: '13px', color: '#666666', marginBottom: '16px' }}>
+                You&apos;ll be redirected to Stripe to complete payment securely.
+              </p>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#1a1a2e',
+                  color: '#FCFAFA',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '13px',
+                  fontSize: '15px',
+                  fontWeight: '700',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.6 : 1,
+                  marginBottom: '10px',
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={(e) => { if (!loading) e.currentTarget.style.opacity = '0.8'; }}
+                onMouseLeave={(e) => { if (!loading) e.currentTarget.style.opacity = '1'; }}
+              >
+                {loading ? 'Processing...' : 'Continue to Payment'}
+              </button>
+
+              <Link href="/cart" style={{ display: 'block', textDecoration: 'none' }}>
+                <button
+                  type="button"
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                    color: '#1a1a2e',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0eeec')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  ← Back to Cart
+                </button>
+              </Link>
+            </form>
+          </div>
+
+          {/* Order summary */}
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#1a1a2e', marginBottom: '20px' }}>
+              Order Summary
+            </h2>
+            <div
+              style={{
+                backgroundColor: '#FCFAFA',
+                borderRadius: '8px',
+                padding: '24px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              }}
+            >
+              {cart.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '16px',
+                    paddingBottom: '16px',
+                    borderBottom: '1px solid #e0e0e0',
+                  }}
+                >
+                  <div>
+                    <p style={{ fontWeight: '600', color: '#1a1a2e', fontSize: '14px', marginBottom: '2px' }}>
+                      {item.title}
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#666666' }}>Qty: {item.quantity}</p>
+                  </div>
+                  <p style={{ fontWeight: '700', color: '#1a1a2e', fontSize: '14px' }}>
+                    ${(item.price * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '4px' }}>
+                <span style={{ fontWeight: '700', color: '#1a1a2e', fontSize: '16px' }}>Total</span>
+                <span style={{ fontWeight: '700', color: '#1a1a2e', fontSize: '16px' }}>
+                  ${getTotalPrice().toFixed(2)}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
