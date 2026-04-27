@@ -6,10 +6,10 @@ import { useRouter } from "next/router";
 import { FiSearch, FiShoppingCart, FiSliders } from "react-icons/fi";
 
 const GENRES = [
-  { label: "House", href: "/shop" },
-  { label: "Techno", href: "/shop" },
-  { label: "Tech House", href: "/shop" },
-  { label: "Drum & Bass", href: "/shop" },
+  { label: "House", value: "House" },
+  { label: "Techno", value: "Techno" },
+  { label: "Tech House", value: "Tech House" },
+  { label: "Drum & Bass", value: "Drum & Bass" },
 ];
 
 const COLLECTIONS = [
@@ -177,7 +177,7 @@ export default function Navbar() {
           {GENRES.map((genre) => (
             <Link
               key={genre.label}
-              href={genre.href}
+              href={`/shop?genre=${encodeURIComponent(genre.value)}`}
               style={{ color: "black", whiteSpace: "nowrap" }}
             >
               {genre.label}
@@ -348,7 +348,7 @@ export default function Navbar() {
             {GENRES.map((genre) => (
               <Link
                 key={genre.label}
-                href={genre.href}
+                href={`/shop?genre=${encodeURIComponent(genre.value)}`}
                 onClick={() => setMobileFiltersOpen(false)}
                 style={{ color: "black" }}
               >
