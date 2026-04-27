@@ -16,6 +16,13 @@ export default function Success() {
       if (!session_id) return;
 
       try {
+        // Deduct stock (idempotent — safe to call on refresh)
+        await fetch("/api/checkout/deduct-stock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id }),
+        });
+
         // Query the order by stripe_session_id
         const ordersRes = await fetch(
           `/api/orders-by-session?session_id=${session_id}`,

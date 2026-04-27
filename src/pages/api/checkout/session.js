@@ -36,6 +36,39 @@ export default async function handler(req, res) {
       }
     }
 
+    // Step 0: Validate stock
+    const productIds = items.map((item) => item.id);
+    const { data: products, error: stockError } = await supabaseAdmin
+      .from("products")
+      .select("id, title, stock_quantity")
+      .in("id", productIds);
+
+    if (stockError || !products) {
+      console.error("Stock check error:", stockError);
+      return res.status(500).json({ error: "Failed to verify stock" });
+    }
+
+    const stockMap = Object.fromEntries(products.map((p) => [p.id, p]));
+    const outOfStock = [];
+
+    for (const item of items) {
+      const product = stockMap[item.id];
+      if (!product || product.stock_quantity < item.quantity) {
+        outOfStock.push(
+          product
+            ? `"${product.title}" (only ${product.stock_quantity} left)`
+            : `Product ID ${item.id} is unavailable`,
+        );
+      }
+    }
+
+    if (outOfStock.length > 0) {
+      return res.status(400).json({
+        error: "Some items are out of stock",
+        outOfStock,
+      });
+    }
+
     // Step 1: Create order in Supabase first
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
