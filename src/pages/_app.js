@@ -8,12 +8,16 @@ function MyApp({ Component, pageProps }) {
   const router = useRouter();
 
   useEffect(() => {
-    // If Supabase redirects back with auth tokens in the hash, forward to /auth/confirm
+    // If Supabase redirects back with auth tokens in the hash, route by type
     if (
       typeof window !== "undefined" &&
       window.location.hash.includes("access_token")
     ) {
-      router.replace("/auth/confirm");
+      if (window.location.hash.includes("type=recovery")) {
+        router.replace("/auth/reset-password");
+      } else {
+        router.replace("/auth/confirm");
+      }
       return;
     }
 
