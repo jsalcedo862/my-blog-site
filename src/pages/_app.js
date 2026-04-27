@@ -1,13 +1,26 @@
-import '@/styles/globals.css';
-import { CartProvider } from '@/context/CartContext';
-import { useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import "@/styles/globals.css";
+import { CartProvider } from "@/context/CartContext";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../../lib/supabaseClient";
 
 function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+
   useEffect(() => {
-    // Check auth state on mount
+    // If Supabase redirects back with auth tokens in the hash, forward to /auth/confirm
+    if (
+      typeof window !== "undefined" &&
+      window.location.hash.includes("access_token")
+    ) {
+      router.replace("/auth/confirm");
+      return;
+    }
+
     supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+      if (event === "SIGNED_IN" && session) {
+        console.log("Auth state changed:", event, session?.user?.email);
+      }
     });
   }, []);
 
@@ -18,4 +31,4 @@ function MyApp({ Component, pageProps }) {
   );
 }
 
-export default MyApp
+export default MyApp;
