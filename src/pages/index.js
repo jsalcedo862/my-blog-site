@@ -68,9 +68,69 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-[#666666]">Loading...</p>
-            </div>
+            <>
+              <style>{`
+                @keyframes shimmer {
+                  0% { background-position: -400px 0; }
+                  100% { background-position: 400px 0; }
+                }
+                .skeleton-shimmer {
+                  background: linear-gradient(90deg, #ece9e4 25%, #f5f3f0 50%, #ece9e4 75%);
+                  background-size: 800px 100%;
+                  animation: shimmer 1.4s infinite linear;
+                }
+              `}</style>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      backgroundColor: "#FCFAFA",
+                      borderRadius: "8px",
+                      border: "1px solid #e0e0e0",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* Image placeholder */}
+                    <div
+                      className="skeleton-shimmer"
+                      style={{ height: "200px", width: "100%" }}
+                    />
+                    <div style={{ padding: "16px" }}>
+                      {/* Title */}
+                      <div
+                        className="skeleton-shimmer"
+                        style={{
+                          height: "16px",
+                          borderRadius: "4px",
+                          marginBottom: "8px",
+                          width: "70%",
+                        }}
+                      />
+                      {/* Artist */}
+                      <div
+                        className="skeleton-shimmer"
+                        style={{
+                          height: "13px",
+                          borderRadius: "4px",
+                          marginBottom: "12px",
+                          width: "50%",
+                        }}
+                      />
+                      {/* Price */}
+                      <div
+                        className="skeleton-shimmer"
+                        style={{
+                          height: "18px",
+                          borderRadius: "4px",
+                          width: "30%",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : recentProducts.length === 0 ? (
             <p className="text-[#666666] text-center">No products available</p>
           ) : (
