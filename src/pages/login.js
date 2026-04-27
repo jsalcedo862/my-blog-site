@@ -13,7 +13,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -22,7 +22,8 @@ export default function Login() {
       setError(error.message);
     } else {
       setError(null);
-      router.push("/admin");
+      const isAdmin = data?.user?.user_metadata?.is_admin === true;
+      router.push(isAdmin ? "/admin" : "/");
     }
   };
 
