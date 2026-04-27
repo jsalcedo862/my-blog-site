@@ -1,21 +1,24 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import ProductForm from '@/components/ProductForm';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Link from 'next/link';
-import { supabaseClient } from '../../../../lib/supabaseClient';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import ProductForm from "@/components/ProductForm";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import { supabaseClient } from "../../../../lib/supabaseClient";
 
 export default function NewProduct() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [token, setToken] = useState('');
+  const [error, setError] = useState("");
+  const [token, setToken] = useState("");
 
   // Get token on mount
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession();
       if (session?.access_token) {
         setToken(session.access_token);
       }
@@ -26,22 +29,22 @@ export default function NewProduct() {
 
   const handleSubmit = async (formData) => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const currentToken = token;  // ← Use the state variable
-      const res = await fetch('/api/admin/products', {
-        method: 'POST',
+      const currentToken = token; // ← Use the state variable
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error('Failed to create product');
-      
-      router.push('/admin/products');
+      if (!res.ok) throw new Error("Failed to create product");
+
+      router.push("/admin/products");
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -50,24 +53,70 @@ export default function NewProduct() {
     }
   };
 
+  const PAGE_BG = "#f5f3f0";
+  const CARD_BG = "#FCFAFA";
+  const PRIMARY = "#1a1a2e";
+  const BORDER = "#e0e0e0";
+
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Create New Product</h1>
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: PAGE_BG,
+          padding: "48px 24px",
+        }}
+      >
+        <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+          <h1
+            style={{
+              fontSize: "26px",
+              fontWeight: 700,
+              color: PRIMARY,
+              marginBottom: "28px",
+            }}
+          >
+            Create New Product
+          </h1>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div
+              style={{
+                backgroundColor: "#fde8e8",
+                color: "#b91c1c",
+                padding: "12px 16px",
+                borderRadius: "6px",
+                marginBottom: "20px",
+                fontSize: "14px",
+              }}
+            >
               {error}
             </div>
           )}
 
-          <ProductForm onSubmit={handleSubmit} loading={loading} />
+          <div
+            style={{
+              backgroundColor: CARD_BG,
+              border: `1px solid ${BORDER}`,
+              borderRadius: "12px",
+              padding: "32px",
+            }}
+          >
+            <ProductForm onSubmit={handleSubmit} loading={loading} />
+          </div>
 
-          <div className="mt-8">
-            <Link href="/admin/products">
-              <button className="text-blue-600 hover:underline">← Back to Products</button>
+          <div style={{ marginTop: "24px" }}>
+            <Link
+              href="/admin/products"
+              style={{
+                color: PRIMARY,
+                fontSize: "14px",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              ← Back to Products
             </Link>
           </div>
         </div>

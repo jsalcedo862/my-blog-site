@@ -73,12 +73,26 @@ export default function EditProduct() {
     }
   };
 
+  const PAGE_BG = "#f5f3f0";
+  const CARD_BG = "#FCFAFA";
+  const PRIMARY = "#1a1a2e";
+  const BORDER = "#e0e0e0";
+  const SECONDARY = "#666666";
+
   if (fetchLoading) {
     return (
       <>
         <Navbar />
-        <div className="flex items-center justify-center min-h-screen">
-          <p>Loading product...</p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            backgroundColor: PAGE_BG,
+          }}
+        >
+          <p style={{ color: SECONDARY }}>Loading product...</p>
         </div>
         <Footer />
       </>
@@ -89,13 +103,25 @@ export default function EditProduct() {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen bg-white py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-red-600">{error}</p>
-            <Link href="/admin/products">
-              <button className="text-blue-600 hover:underline mt-4">
-                ← Back to Products
-              </button>
+        <div
+          style={{
+            minHeight: "100vh",
+            backgroundColor: PAGE_BG,
+            padding: "48px 24px",
+          }}
+        >
+          <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+            <p style={{ color: "#dc2626", marginBottom: "16px" }}>{error}</p>
+            <Link
+              href="/admin/products"
+              style={{
+                color: PRIMARY,
+                fontSize: "14px",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              ← Back to Products
             </Link>
           </div>
         </div>
@@ -107,29 +133,68 @@ export default function EditProduct() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8">Edit Product</h1>
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundColor: PAGE_BG,
+          padding: "48px 24px",
+        }}
+      >
+        <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+          <h1
+            style={{
+              fontSize: "26px",
+              fontWeight: 700,
+              color: PRIMARY,
+              marginBottom: "28px",
+            }}
+          >
+            Edit Product
+          </h1>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div
+              style={{
+                backgroundColor: "#fde8e8",
+                color: "#b91c1c",
+                padding: "12px 16px",
+                borderRadius: "6px",
+                marginBottom: "20px",
+                fontSize: "14px",
+              }}
+            >
               {error}
             </div>
           )}
 
-          {product && (
-            <ProductForm
-              product={product}
-              onSubmit={handleSubmit}
-              loading={loading}
-            />
-          )}
+          <div
+            style={{
+              backgroundColor: CARD_BG,
+              border: `1px solid ${BORDER}`,
+              borderRadius: "12px",
+              padding: "32px",
+            }}
+          >
+            {product && (
+              <ProductForm
+                product={product}
+                onSubmit={handleSubmit}
+                loading={loading}
+              />
+            )}
+          </div>
 
-          <div className="mt-8">
-            <Link href="/admin/products">
-              <button className="text-blue-600 hover:underline">
-                ← Back to Products
-              </button>
+          <div style={{ marginTop: "24px" }}>
+            <Link
+              href="/admin/products"
+              style={{
+                color: PRIMARY,
+                fontSize: "14px",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              ← Back to Products
             </Link>
           </div>
         </div>
