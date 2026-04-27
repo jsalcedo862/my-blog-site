@@ -1,17 +1,33 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import ProductForm from '@/components/ProductForm';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import ProductForm from "@/components/ProductForm";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Link from "next/link";
+import { supabaseClient } from "../../../../../lib/supabaseClient";
 
 export default function EditProduct() {
   const router = useRouter();
   const { id } = router.query;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabaseClient.auth.getSession();
+      if (session?.access_token) {
+        setToken(session.access_token);
+      } else {
+        router.push("/login");
+      }
+    };
+    getSession();
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -19,7 +35,7 @@ export default function EditProduct() {
     const fetchProduct = async () => {
       try {
         const res = await fetch(`/api/products/${id}`);
-        if (!res.ok) throw new Error('Product not found');
+        if (!res.ok) throw new Error("Product not found");
         const data = await res.json();
         setProduct(data);
       } catch (err) {
@@ -34,22 +50,21 @@ export default function EditProduct() {
 
   const handleSubmit = async (formData) => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const token = localStorage.getItem('supabase_token');
       const res = await fetch(`/api/admin/products/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error('Failed to update product');
-      
-      router.push('/admin/products');
+      if (!res.ok) throw new Error("Failed to update product");
+
+      router.push("/admin/products");
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -78,7 +93,9 @@ export default function EditProduct() {
           <div className="max-w-4xl mx-auto">
             <p className="text-red-600">{error}</p>
             <Link href="/admin/products">
-              <button className="text-blue-600 hover:underline mt-4">← Back to Products</button>
+              <button className="text-blue-600 hover:underline mt-4">
+                ← Back to Products
+              </button>
             </Link>
           </div>
         </div>
@@ -100,11 +117,19 @@ export default function EditProduct() {
             </div>
           )}
 
-          {product && <ProductForm product={product} onSubmit={handleSubmit} loading={loading} />}
+          {product && (
+            <ProductForm
+              product={product}
+              onSubmit={handleSubmit}
+              loading={loading}
+            />
+          )}
 
           <div className="mt-8">
             <Link href="/admin/products">
-              <button className="text-blue-600 hover:underline">← Back to Products</button>
+              <button className="text-blue-600 hover:underline">
+                ← Back to Products
+              </button>
             </Link>
           </div>
         </div>

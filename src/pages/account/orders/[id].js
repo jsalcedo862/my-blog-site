@@ -18,6 +18,7 @@ export default function OrderDetails() {
   const { id } = router.query;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [token, setToken] = useState("");
 
   useEffect(() => {
@@ -68,6 +69,24 @@ export default function OrderDetails() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Link
+              href="/account/orders"
+              className="text-blue-600 hover:underline"
+            >
+              ← Back to Orders
+            </Link>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   if (!order)
