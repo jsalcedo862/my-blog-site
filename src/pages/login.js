@@ -1,6 +1,7 @@
 // src/pages/login.js
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function Login() {
@@ -159,6 +160,27 @@ export default function Login() {
             Sign In
           </button>
         </form>
+
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "13px",
+            color: "#666666",
+            marginTop: "24px",
+          }}
+        >
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/signup"
+            style={{
+              color: "#1a1a2e",
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );
