@@ -49,6 +49,9 @@ export default function Signup() {
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm`,
+      },
     });
 
     setLoading(false);
