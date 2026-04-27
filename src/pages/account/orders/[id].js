@@ -1,16 +1,22 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabaseClient } from "../../../../lib/supabaseClient";
 
-const ORDER_STATUSES = ["pending", "paid", "shipped", "delivered"];
+const PAGE_BG = "#f5f3f0";
+const CARD_BG = "#FCFAFA";
+const PRIMARY = "#1a1a2e";
+const SECONDARY = "#666666";
+const BORDER = "#e0e0e0";
+
 const STATUS_COLORS = {
-  pending: "bg-yellow-100 text-yellow-800",
-  paid: "bg-blue-100 text-blue-800",
-  shipped: "bg-purple-100 text-purple-800",
-  delivered: "bg-green-100 text-green-800",
+  pending:   { bg: "#fef9c3", color: "#854d0e", label: "Pending" },
+  paid:      { bg: "#dcfce7", color: "#166534", label: "Paid" },
+  shipped:   { bg: "#dbeafe", color: "#1e40af", label: "Shipped" },
+  delivered: { bg: "#f0fdf4", color: "#15803d", label: "Delivered" },
+  cancelled: { bg: "#fee2e2", color: "#b91c1c", label: "Cancelled" },
 };
 
 export default function OrderDetails() {
@@ -19,166 +25,182 @@ export default function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [token, setToken] = useState("");
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabaseClient.auth.getSession();
-      if (session?.access_token) {
-        setToken(session.access_token);
-      } else {
-        router.push("/login");
+    if (!id) return;
+
+    const load = async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        router.replace("/login");
+        return;
       }
-    };
-    getSession();
-  }, []);
-
-  useEffect(() => {
-    if (!token || !id) return;
-
-    const fetchOrder = async () => {
-      console.log("Fetching order with ID:", id); // Add this line
       try {
         const res = await fetch(`/api/orders/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${session.access_token}` },
         });
-
         if (!res.ok) {
-          const errorData = await res.json();
-          console.error("API error response:", errorData);
-          setError(errorData.error || "Failed to fetch order");
+          const { error: msg } = await res.json();
+          setError(msg || "Failed to fetch order");
           return;
         }
-
-        const data = await res.json();
-        setOrder(data);
+        setOrder(await res.json());
       } catch (err) {
-        console.error("Failed to fetch order:", err);
-        setError(err.message);
+        console.error(err);
+        setError("Failed to load order.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrder();
-  }, [token, id]);
+    load();
+  }, [id]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Link
-              href="/account/orders"
-              className="text-blue-600 hover:underline"
-            >
-              ← Back to Orders
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  if (!order)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Order not found
-      </div>
-    );
+  const status = order ? (STATUS_COLORS[order.status] || STATUS_COLORS.pending) : null;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: "100vh", backgroundColor: PAGE_BG, display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <main className="flex-grow p-8">
-        <div className="max-w-2xl mx-auto">
-          <Link
-            href="/account/orders"
-            className="text-blue-600 hover:underline mb-6 block"
-          >
-            ← Back to Orders
-          </Link>
+      <main style={{ flex: 1, maxWidth: "800px", width: "100%", margin: "0 auto", padding: "48px 24px" }}>
+        <Link
+          href="/account/orders"
+          style={{ fontSize: "13px", color: SECONDARY, textDecoration: "none", display: "inline-block", marginBottom: "24px" }}
+        >
+          â† Back to Orders
+        </Link>
 
-          <div className="border rounded-lg p-6">
-            {/* Order Header */}
-            <div className="mb-6 pb-6 border-b">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-sm text-gray-600">
-                    Order #{order.id.slice(0, 8)}
-                  </p>
-                  <h1 className="text-2xl font-bold">
-                    ${order.total_amount.toFixed(2)}
-                  </h1>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${STATUS_COLORS[order.status]}`}
-                >
-                  {order.status}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Placed on {new Date(order.created_at).toLocaleDateString()}
-              </p>
-            </div>
-
-            {/* Order Items */}
-            <div className="mb-6 pb-6 border-b">
-              <h2 className="text-lg font-semibold mb-4">Items</h2>
-              <div className="space-y-4">
-                {order.order_items?.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-semibold">{item.products?.title}</p>
-                      <p className="text-sm text-gray-600">
-                        {item.products?.artist}
-                      </p>
-                      <p className="text-sm">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="font-semibold">
-                      ${(item.price_at_purchase * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Shipping Address */}
-            <div className="mb-6 pb-6 border-b">
-              <h2 className="text-lg font-semibold mb-4">Shipping Address</h2>
-              <p className="whitespace-pre-line text-gray-700">
-                {order.shipping_address}
-              </p>
-            </div>
-
-            {/* Order Status Timeline */}
-            <div>
-              <h2 className="text-lg font-semibold mb-4">Status Timeline</h2>
-              <div className="space-y-2">
-                {ORDER_STATUSES.map((status, idx) => (
-                  <div key={status} className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full mr-3 ${ORDER_STATUSES.indexOf(order.status) >= idx ? "bg-blue-600" : "bg-gray-300"}`}
-                    ></div>
-                    <span className="capitalize">{status}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "48px 0", color: SECONDARY }}>Loading...</div>
+        ) : error ? (
+          <div style={{ color: "#b91c1c", backgroundColor: "#fde8e8", border: "1px solid #f5c6c6", borderRadius: "8px", padding: "16px" }}>
+            {error}
           </div>
-        </div>
+        ) : !order ? (
+          <div style={{ textAlign: "center", padding: "48px 0", color: SECONDARY }}>Order not found.</div>
+        ) : (
+          <>
+            {/* Header */}
+            <div
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+                marginBottom: "28px", flexWrap: "wrap", gap: "12px",
+              }}
+            >
+              <div>
+                <h1 style={{ fontSize: "22px", fontWeight: "800", color: PRIMARY, marginBottom: "4px" }}>
+                  Order #{order.id.slice(0, 8).toUpperCase()}
+                </h1>
+                <p style={{ fontSize: "13px", color: SECONDARY }}>
+                  Placed on{" "}
+                  {new Date(order.created_at).toLocaleDateString("en-US", {
+                    year: "numeric", month: "long", day: "numeric",
+                  })}
+                </p>
+              </div>
+              <span
+                style={{
+                  backgroundColor: status.bg, color: status.color,
+                  fontSize: "13px", fontWeight: "700", padding: "6px 14px",
+                  borderRadius: "20px", alignSelf: "flex-start",
+                }}
+              >
+                {status.label}
+              </span>
+            </div>
+
+            {/* Items card */}
+            <div
+              style={{
+                backgroundColor: CARD_BG, border: `1px solid ${BORDER}`,
+                borderRadius: "10px", marginBottom: "16px", overflow: "hidden",
+              }}
+            >
+              <div style={{ padding: "16px 20px", borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontSize: "14px", fontWeight: "700", color: PRIMARY }}>Items</h2>
+              </div>
+
+              {order.order_items?.map((item, i) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "14px 20px",
+                    borderBottom: i < order.order_items.length - 1 ? `1px solid ${BORDER}` : "none",
+                    gap: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    {item.products?.image_url && (
+                      <img
+                        src={item.products.image_url}
+                        alt={item.products?.title}
+                        style={{
+                          width: "56px", height: "56px", objectFit: "cover",
+                          borderRadius: "6px", border: `1px solid ${BORDER}`,
+                        }}
+                      />
+                    )}
+                    <div>
+                      <p style={{ fontSize: "14px", fontWeight: "700", color: PRIMARY, marginBottom: "2px" }}>
+                        {item.products?.title || "Unknown Product"}
+                      </p>
+                      <p style={{ fontSize: "13px", color: SECONDARY }}>
+                        {item.products?.artist} &mdash; Qty: {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: "14px", fontWeight: "700", color: PRIMARY, whiteSpace: "nowrap" }}>
+                    ${(item.price_at_purchase * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+              ))}
+
+              <div
+                style={{
+                  display: "flex", justifyContent: "space-between", padding: "14px 20px",
+                  borderTop: `1px solid ${BORDER}`, backgroundColor: "#f9f8f7",
+                }}
+              >
+                <p style={{ fontSize: "15px", fontWeight: "800", color: PRIMARY }}>Total</p>
+                <p style={{ fontSize: "15px", fontWeight: "800", color: PRIMARY }}>
+                  ${Number(order.total_amount).toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            {/* Shipping card */}
+            <div
+              style={{
+                backgroundColor: CARD_BG, border: `1px solid ${BORDER}`,
+                borderRadius: "10px", overflow: "hidden",
+              }}
+            >
+              <div style={{ padding: "16px 20px", borderBottom: `1px solid ${BORDER}` }}>
+                <h2 style={{ fontSize: "14px", fontWeight: "700", color: PRIMARY }}>Shipping Address</h2>
+              </div>
+              <div style={{ padding: "16px 20px", fontSize: "14px", color: PRIMARY, lineHeight: "1.7" }}>
+                {order.shipping_address ? (
+                  typeof order.shipping_address === "object" ? (
+                    <>
+                      {order.shipping_address.name && <p>{order.shipping_address.name}</p>}
+                      {order.shipping_address.line1 && <p>{order.shipping_address.line1}</p>}
+                      {order.shipping_address.line2 && <p>{order.shipping_address.line2}</p>}
+                      <p>
+                        {[order.shipping_address.city, order.shipping_address.state, order.shipping_address.postal_code]
+                          .filter(Boolean).join(", ")}
+                      </p>
+                      {order.shipping_address.country && <p>{order.shipping_address.country}</p>}
+                    </>
+                  ) : (
+                    <p style={{ whiteSpace: "pre-line" }}>{order.shipping_address}</p>
+                  )
+                ) : (
+                  <p style={{ color: SECONDARY }}>No shipping address on file.</p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </main>
       <Footer />
     </div>
