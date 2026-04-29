@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 
 export default function ProductCard({ product }) {
@@ -17,44 +16,108 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition border border-[#e0e0e0]">
+    <div
+      style={{
+        backgroundColor: "#FCFAFA",
+        borderRadius: "8px",
+        overflow: "hidden",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        transition: "box-shadow 0.2s",
+      }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.16)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)")
+      }
+    >
       {/* Album Image */}
       <Link href={`/shop/${product.id}`}>
-        <div className="relative w-full aspect-square bg-gray-100 overflow-hidden cursor-pointer group">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <span className="text-gray-400">No Image</span>
-            </div>
-          )}
-        </div>
+        {product.image_url ? (
+          <img
+            src={product.image_url}
+            alt={product.title}
+            style={{
+              width: "100%",
+              aspectRatio: "1/1",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              aspectRatio: "1/1",
+              backgroundColor: "#e0e0e0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "40px",
+            }}
+          >
+            💿
+          </div>
+        )}
       </Link>
 
       {/* Product Info */}
-      <div className="p-4">
-        <Link href={`/shop/${product.id}`}>
-          <h3 className="font-semibold text-[#1a1a2e] mb-1 hover:text-[#A390E4] line-clamp-2">
+      <div style={{ padding: "16px" }}>
+        <Link href={`/shop/${product.id}`} style={{ textDecoration: "none" }}>
+          <h3
+            style={{
+              fontSize: "15px",
+              fontWeight: "700",
+              color: "#1a1a2e",
+              marginBottom: "4px",
+              lineHeight: "1.3",
+            }}
+          >
             {product.title}
           </h3>
         </Link>
 
-        <p className="text-sm text-[#666666] mb-3 line-clamp-1">
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#666666",
+            marginBottom: "12px",
+          }}
+        >
           {product.artist}
         </p>
 
-        <div className="flex justify-between items-center">
-          <p className="text-lg font-bold text-[#1a1a2e]">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "16px",
+              fontWeight: "700",
+              color: "#1a1a2e",
+            }}
+          >
             ${product.price?.toFixed(2)}
-          </p>
+          </span>
           <button
             onClick={handleAddToCart}
-            className="bg-[#737382] text-white px-3 py-2 rounded text-sm font-medium hover:bg-[#1a1a2e] transition"
+            style={{
+              backgroundColor: "#1a1a2e",
+              color: "#FCFAFA",
+              border: "none",
+              borderRadius: "4px",
+              padding: "8px 14px",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "opacity 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
           >
             Add
           </button>
