@@ -86,152 +86,178 @@ export default function Cart() {
                     borderRadius: "8px",
                     padding: "16px",
                     display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
+                    flexDirection: "column",
+                    gap: "12px",
                     boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                   }}
                 >
-                  {/* Image */}
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      style={{
-                        width: "72px",
-                        height: "72px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
-                        flexShrink: 0,
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "72px",
-                        height: "72px",
-                        backgroundColor: "#e0e0e0",
-                        borderRadius: "4px",
-                        flexShrink: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "24px",
-                      }}
-                    >
-                      ðŸ’¿
-                    </div>
-                  )}
+                  {/* Top row: image + title/artist/price */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "16px",
+                    }}
+                  >
+                    {/* Image */}
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        style={{
+                          width: "72px",
+                          height: "72px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                          flexShrink: 0,
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "72px",
+                          height: "72px",
+                          backgroundColor: "#e0e0e0",
+                          borderRadius: "4px",
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "24px",
+                        }}
+                      >
+                        ðŸ’¿
+                      </div>
+                    )}
 
-                  {/* Title / artist */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p
-                      style={{
-                        fontWeight: "700",
-                        color: "#1a1a2e",
-                        fontSize: "14px",
-                        marginBottom: "2px",
-                      }}
-                    >
-                      {item.title}
-                    </p>
-                    <p style={{ fontSize: "13px", color: "#666666" }}>
-                      {item.artist}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        color: "#1a1a2e",
-                        fontWeight: "600",
-                        marginTop: "4px",
-                      }}
-                    >
-                      ${item.price.toFixed(2)}
-                    </p>
+                    {/* Title / artist */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p
+                        style={{
+                          fontWeight: "700",
+                          color: "#1a1a2e",
+                          fontSize: "14px",
+                          marginBottom: "2px",
+                        }}
+                      >
+                        {item.title}
+                      </p>
+                      <p style={{ fontSize: "13px", color: "#666666" }}>
+                        {item.artist}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          color: "#1a1a2e",
+                          fontWeight: "600",
+                          marginTop: "4px",
+                        }}
+                      >
+                        ${item.price.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Quantity stepper */}
+                  {/* Bottom row: stepper + total + remove */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "6px",
-                      overflow: "hidden",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    {/* Quantity stepper */}
+                    <div
                       style={{
-                        width: "32px",
-                        height: "32px",
-                        background: "none",
-                        border: "none",
-                        fontSize: "16px",
-                        cursor: "pointer",
-                        color: "#1a1a2e",
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "6px",
+                        overflow: "hidden",
                       }}
                     >
-                      {"−"}
-                    </button>
-                    <span
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          background: "none",
+                          border: "none",
+                          fontSize: "16px",
+                          cursor: "pointer",
+                          color: "#1a1a2e",
+                        }}
+                      >
+                        {"−"}
+                      </button>
+                      <span
+                        style={{
+                          width: "32px",
+                          textAlign: "center",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          color: "#1a1a2e",
+                          borderLeft: "1px solid #e0e0e0",
+                          borderRight: "1px solid #e0e0e0",
+                          lineHeight: "32px",
+                        }}
+                      >
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          background: "none",
+                          border: "none",
+                          fontSize: "16px",
+                          cursor: "pointer",
+                          color: "#1a1a2e",
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {/* Line total + remove */}
+                    <div
                       style={{
-                        width: "32px",
-                        textAlign: "center",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#1a1a2e",
-                        borderLeft: "1px solid #e0e0e0",
-                        borderRight: "1px solid #e0e0e0",
-                        lineHeight: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "16px",
                       }}
                     >
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        background: "none",
-                        border: "none",
-                        fontSize: "16px",
-                        cursor: "pointer",
-                        color: "#1a1a2e",
-                      }}
-                    >
-                      +
-                    </button>
+                      <p
+                        style={{
+                          fontWeight: "700",
+                          color: "#1a1a2e",
+                          fontSize: "14px",
+                        }}
+                      >
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#999999",
+                          cursor: "pointer",
+                          fontSize: "18px",
+                          lineHeight: 1,
+                          padding: "4px",
+                        }}
+                        title="Remove"
+                      >
+                        {"×"}
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Line total */}
-                  <p
-                    style={{
-                      fontWeight: "700",
-                      color: "#1a1a2e",
-                      fontSize: "14px",
-                      minWidth: "60px",
-                      textAlign: "right",
-                    }}
-                  >
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </p>
-
-                  {/* Remove */}
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#999999",
-                      cursor: "pointer",
-                      fontSize: "18px",
-                      lineHeight: 1,
-                      padding: "4px",
-                    }}
-                    title="Remove"
-                  >
-                    {"×"}
-                  </button>
                 </div>
               ))}
             </div>
